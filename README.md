@@ -53,6 +53,9 @@ Telegram ──► Hermes (VPS) ──► 9Router (VPS) ──► bridge :8765 �
 | `worker/worker-prompt-v3.txt` | The worker agent's rulebook (current): answer protocol, unlimited tool calls with batching discipline, media handling, honesty rules |
 | `worker/worker-prompt-v2-backup-20261002.txt` | Previous worker prompt (rollback reference) |
 | `tools/ssh-vps.sh`, `tools/scp-vps.sh` | Key-based SSH/SCP wrappers used by the courier to reach the VPS queue |
+| `scripts/install-linux.sh` | One-shot bridge installer for Linux (folders + systemd service + health check) |
+| `scripts/install-macos.sh` | One-shot bridge installer for macOS (folders + launchd agent + health check) |
+| `scripts/install-windows.ps1` | One-shot bridge installer for Windows (folders + Scheduled Task + health check) |
 | `tests/` | Unit tests (fake worker) + live test scripts against the bridge and via 9Router |
 | `docs/FASE1-SAFETY-SPEC.md` | Design/safety notes for the next phase (parallel workers, larger queue) |
 

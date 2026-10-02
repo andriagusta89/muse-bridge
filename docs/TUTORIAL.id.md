@@ -69,6 +69,14 @@ Bridge itu program kecil (satu file Python, tanpa library aneh-aneh) yang:
 3. Nunggu sampai ada file jawaban di `queue/done/`
 4. Ngembaliin jawaban itu ke 9Router kayak jawaban model biasa
 
+> **Cara cepat:** langkah 2.1–2.4 di bawah ini sudah diotomatiskan oleh
+> script installer — `scripts/install-linux.sh` (Linux),
+> `scripts/install-macos.sh` (macOS), `scripts/install-windows.ps1`
+> (Windows). Script-nya yang bikinin folder, masang bridge, daftarin jadi
+> service yang nyala terus, dan ngecek kesehatannya. Langkah manual di
+> bawah ini isinya sama persis, ditulis lengkap biar kamu tahu script-nya
+> ngapain aja.
+
 ### Langkah 2.1 — Bikin foldernya
 
 Di VPS, jalanin:

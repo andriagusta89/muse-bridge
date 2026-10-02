@@ -70,6 +70,13 @@ The bridge is a small program (one Python file, no exotic libraries) that:
 3. Waits for an answer file to appear in `queue/done/`
 4. Returns that answer to 9Router like a normal model response
 
+> **Fast way:** steps 2.1–2.4 below are automated by the installer scripts —
+> `scripts/install-linux.sh` (Linux), `scripts/install-macos.sh` (macOS),
+> `scripts/install-windows.ps1` (Windows). They create the folders, install
+> the bridge, register it as an always-on service, and run the health
+> check. The manual steps below are the same thing, spelled out so you
+> know what the scripts do.
+
 ### Step 2.1 — Create the folders
 
 On the VPS:

@@ -54,6 +54,9 @@ Telegram ──► Hermes (VPS) ──► 9Router (VPS) ──► bridge :8765 �
 | `worker/worker-prompt-v3.txt` | Buku aturan agent pekerja (terbaru): protokol jawaban, tool call tanpa batas dengan disiplin penggabungan, penanganan media, aturan kejujuran |
 | `worker/worker-prompt-v2-backup-20261002.txt` | Prompt pekerja sebelumnya (referensi rollback) |
 | `tools/ssh-vps.sh`, `tools/scp-vps.sh` | Wrapper SSH/SCP berbasis key yang dipakai kurir untuk menjangkau antrean di VPS |
+| `scripts/install-linux.sh` | Installer bridge sekali jalan untuk Linux (folder + service systemd + cek kesehatan) |
+| `scripts/install-macos.sh` | Installer bridge sekali jalan untuk macOS (folder + agent launchd + cek kesehatan) |
+| `scripts/install-windows.ps1` | Installer bridge sekali jalan untuk Windows (folder + Scheduled Task + cek kesehatan) |
 | `tests/` | Unit test (pekerja palsu) + script tes live ke bridge dan lewat 9Router |
 | `docs/FASE1-SAFETY-SPEC.md` | Catatan desain/keamanan fase berikutnya (pekerja paralel, antrean lebih besar) |
 
