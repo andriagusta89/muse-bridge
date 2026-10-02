@@ -1,5 +1,13 @@
 # muse-bridge
 
+![banner muse-bridge](docs/images/banner.svg)
+
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Python 3](https://img.shields.io/badge/python-3.x-blue)
+![Tests](https://img.shields.io/badge/tests-9%2F9_unit_%2B_3%2F3_live-brightgreen)
+![Tool calls](https://img.shields.io/badge/tool__calls-unlimited-purple)
+![Tutorials](https://img.shields.io/badge/tutorials-EN_%2B_ID-orange)
+
 > 🇬🇧 English version: [README.md](README.md)
 
 **Mengubah Muse (agent AI) menjadi model di dalam 9Router, supaya bisa

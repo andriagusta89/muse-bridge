@@ -1,5 +1,13 @@
 # muse-bridge
 
+![muse-bridge banner](docs/images/banner.svg)
+
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Python 3](https://img.shields.io/badge/python-3.x-blue)
+![Tests](https://img.shields.io/badge/tests-9%2F9_unit_%2B_3%2F3_live-brightgreen)
+![Tool calls](https://img.shields.io/badge/tool__calls-unlimited-purple)
+![Tutorials](https://img.shields.io/badge/tutorials-EN_%2B_ID-orange)
+
 > 🇮🇩 Versi Bahasa Indonesia: [README.id.md](README.id.md)
 
 **Turn Muse (an AI agent) into a model inside 9Router, so Hermes can use

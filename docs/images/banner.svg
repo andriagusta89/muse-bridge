@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#0d1117"/>
+  <rect x="0" y="0" width="1280" height="10" fill="#58a6ff"/>
+  <text x="640" y="150" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="92" font-weight="700" fill="#f0f6fc">muse-bridge</text>
+  <text x="640" y="215" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" fill="#8b949e">Muse as an OpenAI-compatible model inside 9Router</text>
+  <text x="640" y="262" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="30" fill="#8b949e">for Hermes — through a simple file queue</text>
+
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="28" font-weight="600">
+    <rect x="70" y="330" width="200" height="72" rx="14" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+    <text x="170" y="377" text-anchor="middle" fill="#f0f6fc">Hermes</text>
+    <text x="292" y="378" text-anchor="middle" fill="#58a6ff" font-size="34">→</text>
+    <rect x="315" y="330" width="200" height="72" rx="14" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+    <text x="415" y="377" text-anchor="middle" fill="#f0f6fc">9Router</text>
+    <text x="537" y="378" text-anchor="middle" fill="#58a6ff" font-size="34">→</text>
+    <rect x="560" y="330" width="200" height="72" rx="14" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+    <text x="660" y="377" text-anchor="middle" fill="#f0f6fc">Bridge</text>
+    <text x="782" y="378" text-anchor="middle" fill="#58a6ff" font-size="34">→</text>
+    <rect x="805" y="330" width="200" height="72" rx="14" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+    <text x="905" y="377" text-anchor="middle" fill="#f0f6fc">File queue</text>
+    <text x="1027" y="378" text-anchor="middle" fill="#58a6ff" font-size="34">→</text>
+    <rect x="1050" y="330" width="170" height="72" rx="14" fill="#161b22" stroke="#bc8cff" stroke-width="2"/>
+    <text x="1135" y="377" text-anchor="middle" fill="#f0f6fc">Muse</text>
+  </g>
+
+  <text x="640" y="492" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="30" fill="#3fb950">Native tool calls • Unlimited batching • Sees images</text>
+  <text x="640" y="545" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="26" fill="#8b949e">Beginner-proof tutorials in English &amp; Bahasa Indonesia</text>
+  <rect x="0" y="630" width="1280" height="10" fill="#58a6ff"/>
+</svg>
