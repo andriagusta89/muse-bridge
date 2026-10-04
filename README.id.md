@@ -13,6 +13,23 @@
 **Mengubah Muse (agent AI) menjadi model di dalam 9Router, supaya bisa
 dipakai Hermes persis kayak model API beneran — lengkap dengan tool calls.**
 
+---
+
+<div align="center">
+
+## 🎁 BELUM PUNYA MUSE? KLAIM BONUS 1 MILIAR TOKEN
+
+### Kode referral: `IB4FJR`
+
+Tukarkan kode ini di Settings Muse **dalam 48 jam setelah bergabung** dan
+kita berdua mendapatkan **1 miliar token Muse**.
+
+**👉 [Baca tutorial klaim Muse — pakai VPN & tanpa VPN](docs/CLAIM-MUSE.id.md)**
+
+</div>
+
+---
+
 Dokumen ini ditulis buat **orang yang sangat awam**. Nggak apa-apa kalau
 kamu baru pertama kali dengar istilah-istilah di sini — semuanya dijelasin
 pelan-pelan dari nol. Baca dari atas ke bawah, jangan loncat-loncat dulu.
@@ -108,7 +125,10 @@ Jangan mulai pasang sebelum semua ini centang:
   ke 9Router itu** (pakai model apa pun dulu, yang penting bisa chat)
 - [ ] **Satu agent Muse** di tempat lain yang punya fitur **hook**
   (script yang bisa jalan tiap beberapa detik dan bisa membangunkan
-  agent)
+  agent). Belum punya akun Muse? Ikuti
+  [tutorial klaim Muse](docs/CLAIM-MUSE.id.md) — tersedia jalur VPN dan
+  tanpa VPN — lalu tukarkan kode referral **`IB4FJR`** dalam 48 jam untuk
+  bonus 1 miliar token
 - [ ] **SSH dari tempat Muse ke VPS bisa**, pakai kunci (key), bukan
   password. Cara ngecek: perintah `ssh user@alamat-vps "echo halo"`
   berhasil dari mesin Muse
@@ -127,6 +147,8 @@ Biar kamu nggak takut sama foldernya — ini semua isinya dan gunanya:
 | `README.id.md` | Dokumen ini (yang lagi kamu baca) |
 | `docs/TUTORIAL.id.md` | **Tutorial lengkap Bahasa Indonesia, langkah demi langkah** — ini bacaan utama buat masang |
 | `docs/TUTORIAL.md` | Tutorial yang sama versi Bahasa Inggris |
+| `docs/CLAIM-MUSE.id.md` | **Tutorial klaim akun Muse pakai VPN & tanpa VPN**, lengkap dengan highlight kode referral `IB4FJR` |
+| `docs/CLAIM-MUSE.md` | Tutorial klaim Muse yang sama versi Bahasa Inggris |
 | `docs/FASE1-SAFETY-SPEC.md` | Catatan rencana fase berikutnya (pekerja paralel, antrean lebih besar) + catatan keamanannya |
 | `bridge/bridge.py` | **Program bridge yang jalan sekarang (v4)** — yang support tool calls |
 | `bridge/bridge-v1.py` | Bridge versi pertama (cuma bisa teks). Disimpan sebagai sejarah & bahan perbandingan |
@@ -174,6 +196,10 @@ powershell -ExecutionPolicy Bypass -File scripts\auto-install.ps1
 Kalau kamu mau ngerti setiap bautnya (atau script-nya error di mesin
 kamu), ikuti tutorialnya. Ada 10 bagian, dari "kita mau bikin apa" sampai
 "kalau ada masalah":
+
+Belum punya akun Muse? Mulai dari
+**[tutorial klaim Muse](docs/CLAIM-MUSE.id.md)** dulu — ada jalur VPN
+dan tanpa VPN, plus kode referral **`IB4FJR`** yang di-highlight di sana.
 
 - 🇮🇩 **[docs/TUTORIAL.id.md](docs/TUTORIAL.id.md)** — Bahasa Indonesia,
   bahasa bayi, pemula pasti bisa

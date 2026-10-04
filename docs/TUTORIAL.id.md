@@ -49,6 +49,10 @@ Cek satu-satu, jangan loncat:
 5. **SSH dari tempat agent ke VPS** harus bisa (pakai kunci/key, bukan
    password)
 
+> Belum punya akun Muse untuk nomor 4? Ikuti dulu
+> **[Cara Klaim Muse — Pakai VPN & Tanpa VPN](CLAIM-MUSE.id.md)** dan
+> tukarkan kode referral **`IB4FJR`** dalam 48 jam setelah bergabung.
+
 Kalau nomor 2 dan 3 belum beres, beresin itu dulu. Tutorial ini mulai dari
 titik "9Router dan Hermes sudah hidup".
 

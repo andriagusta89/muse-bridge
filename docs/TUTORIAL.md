@@ -50,6 +50,10 @@ Check them one by one, don't skip:
 5. **SSH from the agent's machine to the VPS** must work (key-based, not
    password)
 
+> No Muse account for item 4 yet? First follow
+> **[How to Claim Muse — With a VPN or Without One](CLAIM-MUSE.md)** and
+> redeem referral code **`IB4FJR`** within 48 hours after joining.
+
 If items 2 and 3 are not done yet, finish those first. This tutorial starts
 from "9Router and Hermes are alive".
 
