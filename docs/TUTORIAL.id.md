@@ -248,7 +248,7 @@ file yang belum dicap, putuskan "diam" atau "bangunkan pekerja".
 ### Benda 2 — Buku aturan pekerja (worker prompt)
 
 Pas pekerja bangun, dia dikasih buku aturan. Buku aturan yang dipakai
-sekarang ada di `worker/worker-prompt-v3.txt`. Isinya, diterjemahkan ke
+sekarang ada di `worker/worker-prompt-v4.txt`. Isinya, diterjemahkan ke
 bahasa manusia:
 
 **Urutan mikir pekerja (wajib urut):**
@@ -353,7 +353,7 @@ Dari VPS, panggil daftar model 9Router pakai API key kamu.
 Kirim satu chat completion model `muse`, pertanyaan gampang ("2+2 berapa?").
 
 ✅ Lulus: dijawab beneran (jawabannya "4"). Tungguin — jawaban pertama bisa
-25–35 detik. Itu normal di sistem ini.
+20–30 detik. Itu normal di sistem ini.
 
 ### Tes 4 — Tool calls (tes paling penting)
 
@@ -413,12 +413,12 @@ bukti, bukan buat nebak.
 
 | Gejala | Sebab paling mungkin | Obatnya |
 |---|---|---|
-| Error `Muse bridge busy` (429) | Antrean penuh: sudah ada 5 pesanan nunggu | Tunggu yang jalan selesai, kirim ulang. Ini batas antrean, bukan rusak |
+| Error `Muse bridge busy` (429) | Antrean penuh: sudah ada 20 pesanan nunggu | Tunggu yang jalan selesai, kirim ulang. Ini batas antrean, bukan rusak |
 | Timeout / 504 setelah ±4 menit | Pekerja telat jawab — mesin agent mati, atau antrean kepanjangan | Cek mesin agent hidup nggak; cek antrean di VPS (`ls /opt/muse-bridge/queue/pending`) |
 | Hermes cuma jawab teks, nggak pernah pakai tool | Provider/combo salah, atau prompt pekerja versi lama | Cek Bagian 4 (combo `muse` → `["ms/muse"]`) dan prompt pekerja minimal v2 |
-| Jawaban ngarang / ngaku ngecek padahal nggak | Aturan jujur di prompt pekerja hilang/keubah | Pasang ulang prompt dari `worker/worker-prompt-v3.txt` |
+| Jawaban ngarang / ngaku ngecek padahal nggak | Aturan jujur di prompt pekerja hilang/keubah | Pasang ulang prompt dari `worker/worker-prompt-v4.txt` |
 | Semua mati setelah mesin agent restart | Mesin agent itu gampang kereset? Stack di sisi agent (termasuk hook) harus dipulihkan | Bikin script rebuild + watchdog yang ngecek kesehatan stack dan rebuild otomatis kalau mati |
-| Gambar dikirim tapi dijawab ngasal | Prompt pekerja belum ada aturan media | Pakai prompt v3 (ada aturan media di dalamnya) |
+| Gambar dikirim tapi dijawab ngasal | Prompt pekerja belum ada aturan media | Pakai prompt v4 (ada aturan media di dalamnya) |
 | SSH ke VPS putus | Kunci/jaringan | Kurir punya alarm: setelah gagal berkali-kali dia ngabarin pemilik. Cek `ssh-vps.sh "echo ok"` manual |
 
 ## Bagian 10 — Keamanan & kata jujur terakhir
@@ -440,9 +440,9 @@ bukti, bukan buat nebak.
 - Sistem ini **nggak akan pernah secepat API beneran** (2–5 detik). Yang
   jawab itu agent yang harus bangun dan baca konteks dulu. Target
   realistisnya "90% rasa API": protokol lengkap, stabil, cukup cepat
-- Antrean diproses **satu-satu** oleh pekerja (maks 5 pesanan menunggu).
-  Dipakai banyak sesi barengan = yang belakang nunggu lebih lama. Versi
-  paralelnya adalah rencana fase berikutnya, belum ada di repo ini
+- Pesanan diproses **paralel**: koordinator membagi satu pekerja per
+  pesanan (maks 8 barengan, maks 20 pesanan menunggu). Ledakan request
+  tetap antre di belakang waktu mikir per putaran
 - Video: yang bisa dilakukan pekerja adalah **mengintip beberapa frame**,
   bukan menonton video penuh. Kalau ada yang ngaku bisa nonton full, itu
   ngibul

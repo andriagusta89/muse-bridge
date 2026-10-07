@@ -249,7 +249,7 @@ decide "silent" or "wake the worker".
 ### Thing 2 — The worker's rulebook (worker prompt)
 
 When a worker wakes, it is given a rulebook. The current one lives in
-`worker/worker-prompt-v3.txt`. In human words, it says:
+`worker/worker-prompt-v4.txt`. In human words, it says:
 
 **The worker's thinking order (must be in this order):**
 
@@ -355,7 +355,7 @@ Send one chat completion with model `muse`, an easy question ("what is
 2+2?").
 
 ✅ Pass: a real answer comes back ("4"). Be patient — the first answer can
-take 25–35 seconds. That is normal for this system.
+take 20–30 seconds. That is normal for this system.
 
 ### Test 4 — Tool calls (the most important test)
 
@@ -414,12 +414,12 @@ swaps impossible by design — this test is proof, not hope.
 
 | Symptom | Most likely cause | Fix |
 |---|---|---|
-| `Muse bridge busy` error (429) | Queue full: 5 orders already waiting | Wait for running ones to finish, resend. It's a queue limit, not a breakage |
+| `Muse bridge busy` error (429) | Queue full: 20 orders already waiting | Wait for running ones to finish, resend. It's a queue limit, not a breakage |
 | Timeout / 504 after ±4 minutes | Worker answered too late — agent machine down, or queue backed up | Check the agent machine is alive; check the queue on the VPS (`ls /opt/muse-bridge/queue/pending`) |
 | Hermes only answers text, never uses tools | Wrong provider/combo, or an old worker prompt | Check Part 4 (combo `muse` → `["ms/muse"]`) and use worker prompt v2+ |
-| Answers are invented / "I checked" without proof | The honesty rules got lost from the worker prompt | Reinstall the prompt from `worker/worker-prompt-v3.txt` |
+| Answers are invented / "I checked" without proof | The honesty rules got lost from the worker prompt | Reinstall the prompt from `worker/worker-prompt-v4.txt` |
 | Everything dead after the agent machine restarts | That machine resets easily? The agent-side stack (including the hook) must be restored | Keep a rebuild script + a watchdog that checks stack health and rebuilds automatically |
-| Image sent but answer is a guess | Worker prompt has no media rule | Use prompt v3 (it contains the media rule) |
+| Image sent but answer is a guess | Worker prompt has no media rule | Use prompt v4 (it contains the media rule) |
 | SSH to the VPS is down | Key/network problem | The courier has an alarm: after repeated failures it notifies the owner. Test `ssh-vps.sh "echo ok"` manually |
 
 ## Part 10 — Safety & honest final words
@@ -441,9 +441,9 @@ swaps impossible by design — this test is proof, not hope.
 - This will **never be as fast as a real API** (2–5 s). The thing answering
   is an agent that must wake up and read context first. The realistic
   target is "90% of the API feel": complete protocol, stable, fast enough
-- The queue is processed **one order at a time** by the worker (max 5
-  orders waiting). Many sessions at once = the later ones wait longer. A
-  parallel version is the planned next phase; it is not in this repo yet
+- Orders are processed **in parallel**: a coordinator spawns one
+  worker per order (max 8 at once, max 20 orders waiting). Heavy bursts
+  still queue behind the per-round thinking time
 - Video: the worker can only **sample a few frames**, not watch a whole
   video. Anyone claiming full video watching here is bluffing
 - Every round re-reads the entire session history. Very long sessions get

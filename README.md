@@ -78,7 +78,7 @@ can only talk.
 - You already have a VPS with 9Router + Hermes running on it
 - You have access to a Muse whose environment supports **hooks**
   (small scripts that run every few seconds and can wake the agent)
-- You can wait 25–35 seconds per round for answers that come from real
+- You can wait roughly 20–30 seconds per round for answers that come from real
   data
 
 **Don't use this if:**
@@ -150,9 +150,10 @@ So the folders never scare you — here is everything and what it is for:
 | `docs/CLAIM-MUSE.md` | **How to claim a Muse account with a VPN or without one**, including the highlighted `IB4FJR` referral code |
 | `docs/CLAIM-MUSE.id.md` | The same Muse claim guide in Indonesian |
 | `docs/FASE1-SAFETY-SPEC.md` | Design/safety notes for the next phase (parallel workers, bigger queue) |
-| `bridge/bridge.py` | **The bridge program that runs today (v4)** — supports tool calls |
+| `bridge/bridge.py` | **The bridge program that runs today (v5)** — tool calls, queue cap 20, usage estimates, chunked pseudo-streaming |
 | `bridge/bridge-v1.py` | The first bridge (text-only). Kept as history and comparison |
-| `worker/worker-prompt-v3.txt` | **The worker rulebook in use today** — unlimited tool calls, media rules, honesty rules |
+| `worker/worker-prompt-v4.txt` | **The worker rulebook in use today** — parallel coordinator (one worker per request), tool_choice honored, unlimited tool calls, media rules, honesty rules |
+| `worker/worker-prompt-v3.txt` | The previous rulebook (serial processing). Kept for rollback/comparison |
 | `worker/worker-prompt-v2-backup-20261002.txt` | The previous rulebook. A backup if you ever want to roll back |
 | `scripts/auto-install.sh` | **Auto-installer for Linux & macOS** — one command, the rest is guided |
 | `scripts/auto-install.ps1` | **Auto-installer for Windows** |
@@ -162,6 +163,7 @@ So the folders never scare you — here is everything and what it is for:
 | `tools/ssh-vps.sh` | SSH shortcut (wrapper) to the VPS, used by the courier |
 | `tools/scp-vps.sh` | Shortcut for copying files to/from the VPS |
 | `tests/test_bridge_v2.py` | Bridge unit tests (with a fake worker) — 9/9 pass |
+| `tests/test_bridge_v5.py` | Bridge v5 unit tests (v4 suite + usage estimates, chunk splitting, queue cap 20) — 14/14 pass |
 | `tests/test-on-vps.sh` | Live test script against the bridge on the VPS (chat, streaming, tool calls) |
 | `tests/test-via-9router.py` | Test through 9Router (proof tool calls are not stripped in the middle) |
 | `tests/test_prompt_v3.py` | Tests for worker rules v3: batched tool calls, image understanding, no-swap concurrency — 3/3 pass live |
@@ -214,7 +216,7 @@ routes and highlights referral code **`IB4FJR`**.
 4. **Create the `muse` combo**, containing `["ms/muse"]`, plus one
    **9Router API key** for clients
 5. **Install the courier + worker rulebook on the Muse side** (a hook
-   that checks every 5 seconds + worker prompt v3)
+   long-poll, near-instant pickup + worker prompt v4 (parallel coordinator))
 6. **Point Hermes** at the `muse` model in one of its profiles
 7. **Run the tests one by one** — the tutorial's Part 7 has seven tests,
    each with a clear pass sign
@@ -250,12 +252,12 @@ One message from you travels like this (slowly, step by step):
 
 | Thing | The number |
 |---|---|
-| One round (plain chat / one tool request) | ±25–35 seconds |
-| A tool task (two rounds) | ±1 minute |
-| Each extra dependent tool step | +±30 seconds |
+| One round (plain chat / one tool request) | ±20–30 seconds (light requests measured ≈21 s) |
+| A tool task (two rounds) | ±40–60 seconds |
+| Each extra dependent tool step | +±20–30 seconds |
 | Give-up limit per round | 240 seconds (4 minutes) |
-| Courier checks the queue | Every 5 seconds — and **empty checks are free**, they burn no tokens |
-| Orders allowed to wait at once | Max 5 — the 6th is politely refused with a "busy" message; just resend |
+| Courier checks the queue | Long-poll — a new order is spotted within ±1 second; **empty checks are free**, they burn no tokens |
+| Orders allowed to wait at once | Max 20 — the 21st is politely refused with a "busy" message; just resend. Orders are processed in parallel, one worker each |
 | Tokens burn | Only on real orders. Each round, the worker re-reads the whole session history — which is why this model is best used as a "specialist", not for every tiny chat |
 
 **About mix-ups:** every order has a **unique ID** and its answer is
@@ -377,6 +379,13 @@ the running deployment.
   was added. Live tests 3/3 passed: 6 commands batched in one answer,
   an image understood correctly, two concurrent sessions with zero
   crossing
+- **2026-10-07 (Fase 1+2, bridge v5 + prompt v4)** — Requests are now
+  processed **in parallel** (a coordinator spawns one worker per
+  request, max 8 at once; queue cap 5 → 20), `tool_choice` is honored,
+  usage fields carry honest estimates, streamed answers arrive in
+  small chunks, and the courier became a **long-poll** (pickup ≈1 s).
+  Live tests: 8 parallel requests all answered correctly in 39 s total
+  with zero mix-ups; `tool_choice` required and none both obeyed
 
 Every number in this document (delays, request sizes, test results) is
 a real number from the running system's logs — not marketing invention.

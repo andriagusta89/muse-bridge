@@ -78,7 +78,7 @@ yang cuma bisa ngomong.
 - Kamu sudah punya VPS dan sudah jalanin 9Router + Hermes di sana
 - Kamu punya akses ke Muse (agent-nya) yang bisa dipasangi *hook*
   (script pengecek berkala)
-- Kamu sabar nunggu jawaban 25–35 detik per putaran demi jawaban yang
+- Kamu sabar nunggu jawaban ±20–30 detik per putaran demi jawaban yang
   beneran dari data asli
 
 **Nggak cocok / jangan pakai kalau:**
@@ -150,9 +150,10 @@ Biar kamu nggak takut sama foldernya — ini semua isinya dan gunanya:
 | `docs/CLAIM-MUSE.id.md` | **Tutorial klaim akun Muse pakai VPN & tanpa VPN**, lengkap dengan highlight kode referral `IB4FJR` |
 | `docs/CLAIM-MUSE.md` | Tutorial klaim Muse yang sama versi Bahasa Inggris |
 | `docs/FASE1-SAFETY-SPEC.md` | Catatan rencana fase berikutnya (pekerja paralel, antrean lebih besar) + catatan keamanannya |
-| `bridge/bridge.py` | **Program bridge yang jalan sekarang (v4)** — yang support tool calls |
+| `bridge/bridge.py` | **Program bridge yang jalan sekarang (v5)** — tool calls, antrean maks 20, estimasi usage, pseudo-streaming berkeping |
 | `bridge/bridge-v1.py` | Bridge versi pertama (cuma bisa teks). Disimpan sebagai sejarah & bahan perbandingan |
-| `worker/worker-prompt-v3.txt` | **Buku aturan pekerja yang dipakai sekarang** — ada aturan tool call tanpa batas, aturan gambar/media, dan aturan kejujuran |
+| `worker/worker-prompt-v4.txt` | **Buku aturan pekerja yang dipakai sekarang** — koordinator paralel (satu pekerja per request), tool_choice dipatuhi, tool call tanpa batas, aturan gambar/media, aturan kejujuran |
+| `worker/worker-prompt-v3.txt` | Buku aturan versi sebelumnya (proses serial). Disimpan buat rollback/perbandingan |
 | `worker/worker-prompt-v2-backup-20261002.txt` | Buku aturan versi sebelumnya. Buat cadangan kalau mau balikin (rollback) |
 | `scripts/auto-install.sh` | **Pemasang otomatis Linux & macOS** — satu perintah, sisanya dipandu |
 | `scripts/auto-install.ps1` | **Pemasang otomatis Windows** |
@@ -162,6 +163,7 @@ Biar kamu nggak takut sama foldernya — ini semua isinya dan gunanya:
 | `tools/ssh-vps.sh` | Jalan pintas (wrapper) SSH ke VPS, dipakai kurir |
 | `tools/scp-vps.sh` | Jalan pintas copy file ke/dari VPS |
 | `tests/test_bridge_v2.py` | Unit test bridge (pakai pekerja palsu) — 9/9 lulus |
+| `tests/test_bridge_v5.py` | Unit test bridge v5 (suite v4 + estimasi usage, pecahan chunk, batas antrean 20) — 14/14 lulus |
 | `tests/test-on-vps.sh` | Script tes langsung ke bridge di VPS (chat, streaming, tool calls) |
 | `tests/test-via-9router.py` | Script tes lewat 9Router (bukti tool calls nggak dipotong di tengah) |
 | `tests/test_prompt_v3.py` | Tes aturan pekerja v3: batch tool call, gambar, anti-ketuker antar sesi — 3/3 lulus live |
@@ -215,7 +217,7 @@ dan tanpa VPN, plus kode referral **`IB4FJR`** yang di-highlight di sana.
 4. **Combo `muse`** dibuat, isinya `["ms/muse"]`, plus satu **API key
    9Router** buat klien
 5. **Kurir + buku aturan pekerja dipasang di sisi Muse** (hook yang
-   ngecek tiap 5 detik + prompt pekerja v3)
+   long-poll, ketahuan ±1 detik + prompt pekerja v4 (koordinator paralel))
 6. **Hermes diarahkan** ke model `muse` di salah satu profilnya
 7. **Dites satu-satu** — ada 7 tes dengan tanda lulusnya di tutorial
    Bagian 7
@@ -250,12 +252,12 @@ Satu pesan kamu, perjalanannya begini (pelan-pelan):
 
 | Hal | Angkanya |
 |---|---|
-| Satu putaran (chat biasa / satu kali minta tool) | ±25–35 detik |
-| Tugas pakai tool (dua putaran) | ±1 menit |
-| Tiap tool tambahan yang berurutan | +±30 detik |
+| Satu putaran (chat biasa / satu kali minta tool) | ±20–30 detik (request ringan terukur ≈21 detik) |
+| Tugas pakai tool (dua putaran) | ±40–60 detik |
+| Tiap tool tambahan yang berurutan | +±20–30 detik |
 | Batas nyerah per putaran | 240 detik (4 menit) |
-| Kurir ngecek antrean | Tiap 5 detik — dan **pengecekan kosong itu gratis**, nggak bakar token |
-| Pesanan yang boleh nunggu barengan | Maksimal 5 — yang ke-6 ditolak sopan pakai pesan "busy", tinggal kirim ulang |
+| Kurir ngecek antrean | Long-poll — pesanan baru ketahuan dalam ±1 detik; **pengecekan kosong gratis**, nggak bakar token |
+| Pesanan yang boleh nunggu barengan | Maksimal 20 — yang ke-21 ditolak sopan pakai pesan "busy", tinggal kirim ulang. Pesanan diproses paralel, satu pekerja per pesanan |
 | Token kebakar | Cuma pas ada pesanan beneran. Tiap putaran, pekerja baca ulang seluruh riwayat sesi — itu yang bikin model ini cocoknya jadi "spesialis", bukan buat chat receh |
 
 **Soal ketuker:** setiap pesanan punya **ID unik** dan jawabannya ditulis
@@ -374,6 +376,14 @@ yang jalan.
   (tanpa batas, dengan disiplin penggabungan) dan aturan media
   ditambahkan. Tes live 3/3 lulus: batch 6 perintah dalam satu jawaban,
   gambar dipahami dengan benar, dua sesi bersamaan tanpa ketuker
+- **2026-10-07 (Fase 1+2, bridge v5 + prompt v4)** — Request sekarang
+  diproses **paralel** (koordinator membagi satu pekerja per request,
+  maks 8 barengan; antrean naik 5 → 20), `tool_choice` dipatuhi, kolom
+  usage diisi estimasi jujur, jawaban streaming datang berkeping-
+  keping, dan kurir jadi **long-poll** (pesanan ketahuan ±1 detik).
+  Tes live: 8 request paralel semua terjawab benar dalam total 39
+  detik tanpa ketuker; `tool_choice` required dan none sama-sama
+  dipatuhi
 
 Semua angka di dokumen ini (delay, ukuran request, hasil tes) adalah
 angka asli dari log sistem yang jalan — bukan karangan marketing.

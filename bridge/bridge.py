@@ -15,6 +15,12 @@ function:{name, arguments}}]}. Tool calls are forwarded verbatim (after
 normalization) with finish_reason "tool_calls", in both the plain and the
 streaming response, so an agent client (e.g. Hermes) can execute the tools
 on its side and continue the loop with role:"tool" result messages.
+
+v5 (2026-10-07, Fase 1): queue cap raised 5 -> 20 so parallel sessions are
+not rejected under load; usage fields carry honest token ESTIMATES
+(chars/4 over the request and the answer) instead of zeros; streamed
+content answers are split into several small delta chunks (pseudo-
+streaming) instead of one big chunk at the end.
 """
 import json, os, time, uuid, socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -23,7 +29,7 @@ BASE = os.environ.get("MUSE_BRIDGE_QUEUE", "/opt/muse-bridge/queue")
 PORT = int(os.environ.get("MUSE_BRIDGE_PORT", "8765"))
 PENDING = f"{BASE}/pending"
 DONE = f"{BASE}/done"
-MAX_PENDING = 5
+MAX_PENDING = 20
 WAIT_SECS = 240
 KEEPALIVE_SECS = 15
 
@@ -64,6 +70,50 @@ def _normalize_tool_calls(raw):
         return out or None
     except Exception:
         return None
+
+
+def _estimate_tokens(text):
+    """Rough token estimate (chars/4). Honest estimate, not a measurement."""
+    try:
+        return max(1, len(text) // 4)
+    except Exception:
+        return 0
+
+
+def _usage(req, answer):
+    """Estimated usage for one exchange, OpenAI shape."""
+    try:
+        prompt_text = json.dumps(req.get("messages", []), ensure_ascii=False)
+        if req.get("tools"):
+            prompt_text += json.dumps(req["tools"], ensure_ascii=False)
+        if answer and "tool_calls" in answer:
+            completion_text = json.dumps(answer["tool_calls"], ensure_ascii=False)
+        elif answer:
+            completion_text = answer.get("content", "") or ""
+        else:
+            completion_text = ""
+        p, c = _estimate_tokens(prompt_text), _estimate_tokens(completion_text)
+        return {"prompt_tokens": p, "completion_tokens": c, "total_tokens": p + c}
+    except Exception:
+        return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def _split_chunks(text, size=120):
+    """Split content into small word-boundary pieces for pseudo-streaming."""
+    if not text:
+        return [""]
+    out, cur = [], ""
+    for word in text.split(" "):
+        piece = word if not cur else cur + " " + word
+        if len(piece) > size and cur:
+            out.append(cur)
+            cur = word
+        else:
+            cur = piece
+    if cur:
+        out.append(cur)
+    # restore the single spaces that split() removed between pieces
+    return [p + " " for p in out[:-1]] + out[-1:]
 
 
 def _is_dashboard_probe(req):
@@ -230,7 +280,7 @@ class H(BaseHTTPRequestHandler):
             resp = {"id": cid, "object": "chat.completion", "created": created, "model": "muse",
                     "choices": [{"index": 0, "message": message,
                                  "finish_reason": finish}],
-                    "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}}
+                    "usage": _usage(req, answer)}
             self._send(200, resp)
         except (BrokenPipeError, ConnectionResetError, socket.timeout):
             pass
@@ -274,17 +324,25 @@ class H(BaseHTTPRequestHandler):
                       "finish_reason": None}]}
             chunk2 = {"id": cid, "object": "chat.completion.chunk", "created": created,
                       "model": "muse", "choices": [{"index": 0, "delta": {},
-                      "finish_reason": "tool_calls"}]}
-        else:
-            chunk1 = {"id": cid, "object": "chat.completion.chunk", "created": created,
-                      "model": "muse", "choices": [{"index": 0,
-                      "delta": {"role": "assistant", "content": answer.get("content", "")},
-                      "finish_reason": None}]}
-            chunk2 = {"id": cid, "object": "chat.completion.chunk", "created": created,
-                      "model": "muse", "choices": [{"index": 0, "delta": {},
-                      "finish_reason": "stop"}]}
-        self._sse_write("data: " + json.dumps(chunk1) + "\n\n")
-        self._sse_write("data: " + json.dumps(chunk2) + "\n\ndata: [DONE]\n\n")
+                      "finish_reason": "tool_calls"}],
+                      "usage": _usage(req, answer)}
+            self._sse_write("data: " + json.dumps(chunk1) + "\n\n")
+            self._sse_write("data: " + json.dumps(chunk2) + "\n\ndata: [DONE]\n\n")
+            return
+        # content: pseudo-stream in small pieces so clients render progressively
+        pieces = _split_chunks(answer.get("content", ""))
+        for i, piece in enumerate(pieces):
+            delta = {"role": "assistant", "content": piece} if i == 0 else {"content": piece}
+            chunk = {"id": cid, "object": "chat.completion.chunk", "created": created,
+                     "model": "muse", "choices": [{"index": 0, "delta": delta,
+                     "finish_reason": None}]}
+            if not self._sse_write("data: " + json.dumps(chunk) + "\n\n"):
+                return
+            time.sleep(0.03)
+        final = {"id": cid, "object": "chat.completion.chunk", "created": created,
+                 "model": "muse", "choices": [{"index": 0, "delta": {},
+                 "finish_reason": "stop"}], "usage": _usage(req, answer)}
+        self._sse_write("data: " + json.dumps(final) + "\n\ndata: [DONE]\n\n")
 
 
 if __name__ == "__main__":
